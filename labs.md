@@ -9,11 +9,8 @@
 
 ---
 
-Perfect — here are the **remaining GH‑900 labs for tomorrow (Day 2)** based on your original markdown list, with **Introduction to Git excluded** ✅
 
-***
-
-### ✅ **GH‑900 Labs – Day 2 **
+## ✅ **GH‑900 Labs – Day 2 **
 
 | Module  | Exercise Name  | Link  |
 | --- | --- | --- |
