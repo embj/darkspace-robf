@@ -1,0 +1,56 @@
+name: Build PDF from Markdown
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pandoc wkhtmltopdf
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate Markdown
+        run: npx --yes markdownlint-cli2 "**/*.md"
+
+      - name: Merge Markdown and convert to PDF
+        run: |
+          # Collect all markdown files in a deterministic order
+          mapfile -t MD_FILES < <(find . -maxdepth 1 -name '*.md' -not -name 'LICENSE*' | sort)
+
+          if [ ${#MD_FILES[@]} -eq 0 ]; then
+            echo "::error::No markdown files found to convert"
+            exit 1
+          fi
+
+          echo "Merging files: ${MD_FILES[*]}"
+
+          # Convert merged markdown to a standalone HTML file
+          pandoc "${MD_FILES[@]}" \
+            -o merged-output.html \
+            --standalone \
+            --metadata title="DarkSpace Documentation"
+
+          # Convert HTML to PDF
+          wkhtmltopdf merged-output.html merged-output.pdf
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-documentation-pdf
+          path: merged-output.pdf
